@@ -58,13 +58,37 @@ class ArbitrageMonitor:
         """找出资金费率差异最大的机会"""
         opportunities = []
         for symbol, data in rates.items():
-            # TODO(team): 根据实际返回格式解析各交易所费率
-            # 预期格式: data["exchanges"] = [{"name": "binance", "rate": 0.01}, ...]
-            # 
-            # 计算逻辑：
-            # max_rate_exchange - min_rate_exchange = spread
-            # 如果 spread > threshold，推送告警
-            pass
+            for exchange in ["binance", "okx", "bybit"]:
+            try:
+                resp = requests.get(
+                    f"{self.base_url}/v1/exchange/funding-history",
+                    headers=self.headers,
+                    params={"pair": f"{symbol}/USDT", "exchange": exchange, "limit": 1}
+                )
+                if resp.ok:
+                    items = resp.json().get("data", [])
+                    if items:
+                        rates[f"{symbol}_{exchange}"] = {
+                            "exchange": exchange,
+                            "rate": items[0]["funding_rate"],
+                            "timestamp": items[0]["timestamp"]
+                        }
+            except Exception:
+                continue
+        
+        # 找最大和最小费率的交易所
+        if len(rates) >= 2:
+            sorted_rates = sorted(rates.values(), key=lambda x: x["rate"])
+            spread = sorted_rates[-1]["rate"] - sorted_rates[0]["rate"]
+            if spread > 0:
+                opportunities.append({
+                    "symbol": symbol,
+                    "spread": round(spread * 100, 4),  # 转为百分比
+                    "long_exchange": sorted_rates[0]["exchange"],
+                    "long_rate": round(sorted_rates[0]["rate"] * 100, 4),
+                    "short_exchange": sorted_rates[-1]["exchange"],
+                    "short_rate": round(sorted_rates[-1]["rate"] * 100, 4),
+                })
         return opportunities
 ```
 
@@ -115,15 +139,44 @@ class ArbitrageMonitor:
                 print(message)  # 替换为实际推送逻辑
 ```
 
-<!-- TODO(team): 补充完整的资金费率 API 返回格式示例 -->
-<!-- TODO(team): 添加 Telegram Bot 推送代码 -->
+**资金费率 API 返回格式（已验证）：**
+
+```json
+{
+  "data": [
+    {
+      "exchange": "binance",
+      "funding_rate": -0.00007398,
+      "pair": "BTC/USDT",
+      "timestamp": 1775145600
+    }
+  ],
+  "meta": {"credits_used": 1}
+}
+```
+
+> **注意：** `pair` 格式为 `BTC/USDT`（用 `/` 分隔）。`funding_rate` 是小数，`-0.00007398` = -0.007398%。
+**Telegram Bot 推送：**
+
+```python
+import requests
+
+def send_telegram(bot_token, chat_id, message):
+    requests.post(
+        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+        json={"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
+    )
+
+# 在 check_and_alert 中调用：
+# send_telegram(BOT_TOKEN, CHAT_ID, message)
+```
 
 ## 进阶：用 SQL 做历史回测
 
 ```sql
 -- 查历史资金费率异常事件
--- TODO(team): 确认 ClickHouse 中是否有资金费率历史表
--- 可能用 agent.hyperliquid_funding_rates 或类似表
+-- Hyperliquid 永续合约数据在 agent.hyperliquid_perp_* 表中
+-- 其他交易所资金费率建议用 Data API (exchange-funding-history) 获取
 
 SELECT 
     coin,
