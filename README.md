@@ -1,89 +1,89 @@
 <p align="right">
-  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
+  <a href="./README.en.md">English</a> | <a href="./README.md">中文</a>
 </p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/build-with-surf/.github/main/assets/surf-logo.jpg" width="60" alt="Surf" />
 </p>
 
-<h1 align="center">Surf API Docs</h1>
+<h1 align="center">Surf API 文档</h1>
 
 <p align="center">
-  Community-maintained tutorials, guides, and best practices for <a href="https://asksurf.ai">Surf API</a>
+  社区维护的 <a href="https://asksurf.ai">Surf API</a> 教程、指南和最佳实践
 </p>
 
 <p align="center">
-  <a href="#getting-started">Getting Started</a> &bull;
-  <a href="#tutorials">Tutorials</a> &bull;
-  <a href="#contributing">Contributing</a> &bull;
-  <a href="https://asksurf.ai">Official Site</a>
+  <a href="#快速开始">快速开始</a> &bull;
+  <a href="#教程">教程</a> &bull;
+  <a href="#贡献">贡献</a> &bull;
+  <a href="https://asksurf.ai">官网</a>
 </p>
 
 ---
 
-## About
+## 关于
 
-This is a **community-driven** knowledge base for developers building with Surf. Here you'll find practical tutorials, code snippets, and patterns that go beyond the official docs.
+这是一个**社区驱动**的知识库，为使用 Surf 构建应用的开发者提供实用教程、代码片段和实践经验。
 
-> Surf is a crypto-native AI platform with real-time on-chain data, market sentiment analysis, and agentic execution capabilities.
+> Surf 是 Crypto 原生的 AI 平台，具备实时链上数据、市场情绪分析和 Agent 执行能力。
 
-## Repository Structure
+## 仓库结构
 
 ```
 surf-api-docs/
-├── getting-started/          # Setup and first steps
+├── getting-started/          # 入门指南
 │   ├── quickstart.md
 │   └── authentication.md
-├── tutorials/                # Step-by-step guides
+├── tutorials/                # 分步教程
 │   ├── your-first-query.md
 │   ├── building-a-dashboard.md
 │   └── ...
-├── guides/                   # In-depth topic guides
+├── guides/                   # 专题指南
 │   ├── on-chain-data.md
 │   ├── sentiment-analysis.md
 │   └── agent-workflows.md
-├── examples/                 # Code examples
+├── examples/                 # 代码示例
 │   ├── python/
 │   ├── javascript/
 │   └── curl/
-└── faq.md                    # Common questions
+└── faq.md                    # 常见问题
 ```
 
-## Getting Started
+## 快速开始
 
-> Coming soon — We're building out the initial docs based on early developer feedback. Check back or watch this repo for updates.
+> 文档正在根据早期开发者反馈持续完善中。Star 这个仓库获取更新通知。
 
-### Prerequisites
+### 环境要求
 
-- A Surf account with API credits ([sign up](https://asksurf.ai))
-- Python 3.8+ or Node.js 18+
+- Surf 账号 + API credits（[注册](https://asksurf.ai)）
+- Python 3.8+ 或 Node.js 18+
 
-## Tutorials
+## 教程
 
-| Tutorial | Level | Description |
-|----------|-------|-------------|
-| _Coming soon_ | Beginner | Your first Surf API query |
-| _Coming soon_ | Intermediate | Build a real-time arbitrage monitor |
-| _Coming soon_ | Intermediate | Token sentiment dashboard |
-| _Coming soon_ | Advanced | Deploy an autonomous trading agent |
+| 教程 | 难度 | 描述 |
+|------|------|------|
+| _即将发布_ | 入门 | 你的第一个 Surf API 查询 |
+| _即将发布_ | 中级 | 构建实时套利监控工具 |
+| _即将发布_ | 中级 | Token 舆情分析看板 |
+| _即将发布_ | 高级 | 部署自主交易 Agent |
 
-## Contributing
+## 贡献
 
-We welcome contributions from the community! Here's how:
+欢迎社区贡献！
 
-1. **Found an error?** Open an [issue](https://github.com/build-with-surf/surf-api-docs/issues)
-2. **Want to add a tutorial?** Fork, write, and submit a PR
-3. **Have a code example?** Add it to the `examples/` directory
+1. **发现错误？** 提 [Issue](https://github.com/build-with-surf/surf-api-docs/issues)
+2. **想写教程？** Fork、写完、提 PR
+3. **有代码示例？** 放到 `examples/` 目录
 
-### Writing Guidelines
+### 写作规范
 
-- Use clear, concise language
-- Include working code examples
-- Test all code before submitting
-- Add a difficulty level (Beginner / Intermediate / Advanced)
+- 语言清晰、简洁
+- 包含可运行的代码示例
+- 提交前测试所有代码
+- 标注难度等级（入门 / 中级 / 高级）
 
 ---
 
 <p align="center">
-  <sub>Part of the <a href="https://github.com/build-with-surf">Build with Surf</a> community</sub>
+  <sub><a href="https://github.com/build-with-surf">Build with Surf</a> 社区项目</sub>
 </p>
