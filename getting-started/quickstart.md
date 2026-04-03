@@ -123,7 +123,16 @@ LIMIT 10
 
 > **性能提示：** 永远先按 `block_date` 过滤 — 这是分区键，能让 ClickHouse 跳过无关分区。
 
-<!-- TODO(team): 补充 ClickHouse 连接地址和端口（文档说 port 8443 TLS, user: agent） -->
+**连接信息：**
+
+| 设置 | 值 |
+|------|-----|
+| 协议 | ClickHouse HTTP（端口 8443，TLS） |
+| 用户 | `agent`（只读） |
+| 数据库 | `agent`（原始表）、`curated`（分析视图） |
+| 最大执行时间 | 120 秒 |
+| 最大内存 | 16 GB |
+| 最大返回行数 | 1,000,000 |
 
 ## Credits 计费
 
