@@ -17,6 +17,7 @@
 | 脚本 | 功能 | 数据源 |
 |------|------|--------|
 | [market_dashboard.py](market_dashboard.py) | 终端市场仪表盘 — 价格、恐贪指数、DeFi TVL、期货 | Market + DeFi + Futures |
+| [multi_wallet_dashboard.py](multi_wallet_dashboard.py) | 多钱包资产总览 — 净值、链分布、标签、DeFi 持仓 | Wallet |
 | [funding_rate_scanner.py](funding_rate_scanner.py) | 跨交易所资金费率扫描，发现套利机会 | Exchange Funding |
 | [whale_tracker.py](whale_tracker.py) | 巨鲸钱包跨链资产追踪 | Wallet |
 | [mindshare_monitor.py](mindshare_monitor.py) | 项目 Twitter Mindshare 监控与异动检测 | Social |
@@ -31,10 +32,14 @@ cd surf-api-docs/examples/python
 
 # 直接运行（无需安装依赖）
 python market_dashboard.py
+python multi_wallet_dashboard.py
 python funding_rate_scanner.py
 python whale_tracker.py
 python mindshare_monitor.py
 python kol_analyzer.py
+
+# multi_wallet_dashboard 支持一次传多个地址
+python multi_wallet_dashboard.py vitalik.eth 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 
 # whale_tracker 支持自定义地址
 python whale_tracker.py vitalik.eth
