@@ -135,7 +135,7 @@ curl -H "Authorization: Bearer <your-api-key>" \
   "https://api.ask.surf/gateway/v1/me/credit-balance"
 ```
 
-<!-- TODO(team): 补充获取 API Key 的步骤和 Credit 充值方式 -->
+> **获取 API Key & Credits：** 联系 [@siriusxyzzz](https://x.com/siriusxyzzz) 加入开发者微信群，群内获取 API Key 和 Credits。
 
 ---
 
