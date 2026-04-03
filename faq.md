@@ -46,7 +46,7 @@ client = OpenAI(
 
 Surf 的扩展字段（`ability`, `citation`）可能需要通过 `extra_body` 传递。
 
-<!-- TODO(team): 验证 OpenAI SDK 兼容性和 extra_body 传参方式 -->
+> **已验证：** `extra_body` 可传递 `ability`、`reasoning_effort`、`citation`。Streaming 正常。
 
 ### 数据延迟是多少？
 
