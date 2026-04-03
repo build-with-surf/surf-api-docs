@@ -175,7 +175,7 @@ response = client.chat.completions.create(
 )
 ```
 
-<!-- TODO(team): 验证 OpenAI SDK 兼容性，确认 ability/citation 等扩展字段是否能通过 extra_body 传递 -->
+> **已验证（2026-04-03）：** OpenAI SDK 完全兼容。`extra_body` 可以传递 `ability`、`reasoning_effort`、`citation` 等 Surf 扩展字段。Streaming 也正常工作。
 
 ---
 
