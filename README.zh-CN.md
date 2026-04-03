@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://asksurf.ai/favicon.ico" width="60" alt="Surf" />
+  <img src="https://raw.githubusercontent.com/build-with-surf/.github/main/assets/surf-logo.jpg" width="60" alt="Surf" />
 </p>
 
 <h1 align="center">Surf API 文档</h1>
