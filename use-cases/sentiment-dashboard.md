@@ -72,8 +72,14 @@ class SentimentDashboard:
     def detect_divergence(self, symbol):
         """检测舆情-链上背离"""
         mindshare = self.get_mindshare(symbol)
-        # TODO(team): 补充 TVL 数据获取
-        # tvl = requests.get(f"{self.data_url}/v1/project/tvl", ...)
+        # 获取 DeFi TVL 排名数据
+        tvl_resp = requests.get(
+            f"{self.data_url}/v1/project/defi-ranking",
+            headers=self.headers,
+            params={"metric": "tvl", "limit": 20}
+        )
+        tvl_data = tvl_resp.json().get("data", []) if tvl_resp.ok else []
+        # 返回格式: [{"name": "Aave", "tvl": 40779865964, "fees": ..., "revenue": ...}, ...]
         
         # 背离逻辑：
         # mindshare_change = (本周 mindshare - 上周) / 上周
@@ -97,7 +103,7 @@ SELECT
     count(*) AS trade_count
 FROM agent.ethereum_dex_trades
 WHERE block_date >= today() - 30
-  -- TODO(team): 添加项目过滤条件（project = 'uniswap' 等）
+  AND project = 'uniswap'  -- 按协议名过滤，可选值：uniswap, aave, curve, lido 等
 GROUP BY block_date
 ORDER BY block_date
 ```
@@ -129,7 +135,20 @@ ORDER BY block_date
 - **存储：** 历史背离事件存数据库，用于回测信号准确率
 - **告警：** 背离信号通过 Telegram Bot 推送
 
-<!-- TODO(team): 补充实际 mindshare API 返回格式 -->
+**Mindshare API 返回格式（已验证）：**
+
+```json
+{
+  "data": [
+    {"timestamp": 1774828800, "value": 0.0523},
+    {"timestamp": 1774915200, "value": 0.0487},
+    ...
+  ],
+  "meta": {"credits_used": 2, "limit": 30, "offset": 0, "total": 30}
+}
+```
+
+> `value` 是该项目在 Crypto Twitter 中的 mindshare 占比（0-1），`interval` 默认按天。
 
 ---
 
