@@ -1,3 +1,7 @@
+<p align="right">
+  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
+</p>
+
 <p align="center">
   <img src="https://asksurf.ai/favicon.ico" width="60" alt="Surf" />
 </p>
