@@ -150,7 +150,25 @@ btc_price = surf.price("BTC")
 eth_funding = surf.funding_rate("ETH")
 ```
 
-<!-- TODO(team): 验证以上端点路径是否准确，补充完整的端点列表 -->
+> **已验证（2026-04-03）：** 以下端点实测可用，pair 格式为 `BTC/USDT`（用 `/` 分隔，不是 `-`）：
+>
+> | 端点 | 返回字段 | Credits |
+> |------|---------|---------|
+> | `market-price` | metric, symbol, timestamp, value | 1 |
+> | `market-ranking` | name, symbol, price_usd, market_cap_usd, volume_24h_usd, change_24h_pct... | 1 |
+> | `market-futures` | symbol, funding_rate, long_short_ratio, open_interest, volume_24h | 1 |
+> | `market-fear-greed` | classification, price, timestamp, value | 1 |
+> | `exchange-price` | pair, last, bid, ask, high_24h, low_24h, volume_24h_base, change_24h_pct | 1 |
+> | `exchange-funding-history` | exchange, pair, funding_rate, timestamp | 1 |
+> | `exchange-long-short-ratio` | exchange, pair, long_short_ratio, timestamp | 1 |
+> | `exchange-markets` | pair, exchange, base, quote, type, active, maker_fee, taker_fee | 1 |
+> | `social-user` | handle, name, bio, avatar, followers_count, following_count, user_id | 2 |
+> | `social-mindshare` | timestamp, value | 2 |
+> | `token-holders` | address, balance, entity_name, entity_type, percentage | 1 |
+> | `wallet-detail` | active_chains (chain, chain_id, usd_value) | - |
+> | `project-defi-ranking` | name, symbol, tvl, fees, revenue, users | 2 |
+>
+> **注意：** `chain` 参数必须用全称（`ethereum` 不是 `eth`），`pair` 用 `/` 分隔（`BTC/USDT` 不是 `BTC-USDT`）。
 
 ## 错误处理
 
