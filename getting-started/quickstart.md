@@ -1,47 +1,47 @@
-# 快速开始
+# Quickstart
 
-[English](./quickstart.en.md) | 中文
+[English](./quickstart.en.md) | [中文](./quickstart.md)
 
 ---
 
-5 分钟内跑通 Surf。选择你的使用方式：
+Get up and running with Surf in 5 minutes. Choose your preferred method:
 
-## 方式一：Surf Skill（推荐 — 给 AI Agent）
+## Option 1: Surf Skill (Recommended — for AI Agents)
 
-如果你用 Claude Code、Codex 或其他 AI 编程工具，一行命令装好 Surf Skill：
+If you use Claude Code, Codex, or other AI coding tools, install the Surf Skill with one command:
 
 ```bash
 npx skills add asksurf-ai/surf-skills --skill surf
 ```
 
-装完后直接对 Agent 说话就行：
+Then just talk to your Agent:
 
 ```
-"ETH 现在多少钱？"
-"Polymarket 上最热门的市场是哪些？"
-"显示持有 AAVE 最多的钱包"
+"What's the current price of ETH?"
+"What are the hottest markets on Polymarket?"
+"Show me the wallets holding the most AAVE"
 ```
 
-Skill 会自动处理认证、数据发现和请求。
+The Skill automatically handles authentication, data discovery, and requests.
 
-## 方式二：Surf CLI
+## Option 2: Surf CLI
 
-终端安装：
+Install from your terminal:
 
 ```bash
 curl -fsSL https://agent.asksurf.ai/cli/releases/install.sh | sh
 ```
 
-登录并发出第一个请求：
+Log in and make your first request:
 
 ```bash
 surf login
 surf market-price --symbol BTC
 ```
 
-## 方式三：Chat API（构建应用）
+## Option 3: Chat API (Build Applications)
 
-Chat API 兼容 OpenAI 格式，切换成本为零：
+The Chat API is OpenAI-compatible, so switching over is seamless:
 
 ```bash
 curl --request POST \
@@ -51,13 +51,13 @@ curl --request POST \
   --data '{
     "model": "surf-1.5",
     "messages": [
-      {"role": "user", "content": "分析 BTC 过去 7 天的市场走势，给出关键支撑位和阻力位"}
+      {"role": "user", "content": "Analyze BTC market trends over the past 7 days, including key support and resistance levels"}
     ],
     "reasoning_effort": "medium"
   }'
 ```
 
-### 用 Python 调用
+### Python Example
 
 ```python
 import requests
@@ -71,7 +71,7 @@ response = requests.post(
     json={
         "model": "surf-1.5",
         "messages": [
-            {"role": "user", "content": "对比 Aave 和 Compound 的 TVL 趋势"}
+            {"role": "user", "content": "Compare TVL trends between Aave and Compound"}
         ],
         "reasoning_effort": "medium",
         "ability": ["evm_onchain", "market_analysis"],
@@ -83,36 +83,36 @@ result = response.json()
 print(result["choices"][0]["message"]["content"])
 ```
 
-### 关键参数
+### Key Parameters
 
-| 参数 | 作用 | 选项 |
-|------|------|------|
-| `model` | 选择模型 | `surf-1.5`（推荐）/ `surf-1.5-instant` / `surf-1.5-thinking` |
-| `reasoning_effort` | 推理深度 | `low` / `medium` / `high` |
-| `ability` | 指定数据能力 | `search` / `evm_onchain` / `solana_onchain` / `market_analysis` / `calculate` |
-| `citation` | 引用格式 | `source` / `chart` |
-| `stream` | 流式输出 | `true` / `false` |
+| Parameter | Purpose | Options |
+|-----------|---------|---------|
+| `model` | Select model | `surf-1.5` (recommended) / `surf-1.5-instant` / `surf-1.5-thinking` |
+| `reasoning_effort` | Reasoning depth | `low` / `medium` / `high` |
+| `ability` | Specify data capabilities | `search` / `evm_onchain` / `solana_onchain` / `market_analysis` / `calculate` |
+| `citation` | Citation format | `source` / `chart` |
+| `stream` | Streaming output | `true` / `false` |
 
-## 方式四：Data API（直接查数据）
+## Option 4: Data API (Query Data Directly)
 
-83 个 REST 端点，直接拿结构化数据：
+83 REST endpoints returning structured data:
 
 ```bash
-# 查 BTC 价格
+# Get BTC price
 curl -H "Authorization: Bearer <your-api-key>" \
   "https://api.ask.surf/gateway/v1/market/price?symbol=BTC"
 
-# 查资金费率
+# Get funding rates
 curl -H "Authorization: Bearer <your-api-key>" \
   "https://api.ask.surf/gateway/v1/exchange/funding-rate?symbol=BTC"
 ```
 
-## 方式五：SQL 直查（Data Catalog）
+## Option 5: SQL Queries (Data Catalog)
 
-58 张 ClickHouse 表，直接写 SQL：
+58 ClickHouse tables with direct SQL access:
 
 ```sql
--- 昨天 DEX 交易量 Top 10 协议
+-- Top 10 DEX protocols by volume yesterday
 SELECT project, sum(amount_usd) AS volume_usd
 FROM agent.ethereum_dex_trades
 WHERE block_date = today() - 1
@@ -121,31 +121,31 @@ ORDER BY volume_usd DESC
 LIMIT 10
 ```
 
-> **性能提示：** 永远先按 `block_date` 过滤 — 这是分区键，能让 ClickHouse 跳过无关分区。
+> **Performance tip:** Always filter by `block_date` first — it's the partition key, allowing ClickHouse to skip irrelevant partitions.
 
-**连接信息：**
+**Connection details:**
 
-| 设置 | 值 |
-|------|-----|
-| 协议 | ClickHouse HTTP（端口 8443，TLS） |
-| 用户 | `agent`（只读） |
-| 数据库 | `agent`（原始表）、`curated`（分析视图） |
-| 最大执行时间 | 120 秒 |
-| 最大内存 | 16 GB |
-| 最大返回行数 | 1,000,000 |
+| Setting | Value |
+|---------|-------|
+| Protocol | ClickHouse HTTP (port 8443, TLS) |
+| User | `agent` (read-only) |
+| Database | `agent` (raw tables), `curated` (analytical views) |
+| Max execution time | 120 seconds |
+| Max memory | 16 GB |
+| Max rows returned | 1,000,000 |
 
-## Credits 计费
+## Credits Billing
 
-每次 API 调用消耗一定 Credits，响应里的 `meta.credits_used` 会告诉你这次花了多少。
+Each API call consumes Credits. The `meta.credits_used` field in the response tells you how much was consumed.
 
 ```bash
-# 查剩余额度
+# Check remaining balance
 curl -H "Authorization: Bearer <your-api-key>" \
   "https://api.ask.surf/gateway/v1/me/credit-balance"
 ```
 
-> **获取 API Key & Credits：** 联系 [@siriusxyzzz](https://x.com/siriusxyzzz) 加入开发者微信群，群内获取 API Key 和 Credits。
+> **Get API Key & Credits:** Contact [@siriusxyzzz](https://x.com/siriusxyzzz) to join the developer WeChat group for API keys and Credits.
 
 ---
 
-**下一步：** 看 [Chat API 实战指南](../guides/chat-api-guide.md) 学习如何构建实际应用，或者查看 [使用场景](../use-cases/) 获取灵感。
+**Next:** See the [Chat API Guide](../guides/chat-api-guide.md) to learn how to build real applications, or check out [Use Cases](../use-cases/) for inspiration.
