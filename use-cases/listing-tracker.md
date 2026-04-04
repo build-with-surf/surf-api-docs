@@ -1,25 +1,25 @@
-# 场景：新币上线追踪器
+# Use Case: New Listing Tracker
 
-[English](./listing-tracker.en.md) | 中文
+[English](./listing-tracker.en.md) | [中文](./listing-tracker.md)
 
 ---
 
-## 做什么
+## What It Does
 
-监控交易所新币上线公告，自动追踪上线后 30 天的表现（价格、成交量、持币地址数），结合 Surf AI 分析上线前的 Twitter 热度和 KOL 站队。
+Monitors exchange new listing announcements, automatically tracks performance for 30 days after listing (price, volume, holder count), and uses Surf AI to analyze pre-listing Twitter buzz and KOL sentiment.
 
-## 工作流程
+## Workflow
 
 ```
-1. 发现新上线 → Chat API 抓取上线公告
-2. 上线后每天记录 → Data API 拉取价格/成交量
-3. 社交分析 → Chat API 分析 Twitter 讨论
-4. 30 天总结 → Chat API 生成表现报告
+1. Discover new listing → Chat API fetches listing announcements
+2. Daily tracking post-listing → Data API pulls price/volume
+3. Social analysis → Chat API analyzes Twitter discussions
+4. 30-day summary → Chat API generates performance report
 ```
 
-## 核心代码
+## Core Code
 
-### 1. 发现新上线
+### 1. Discover New Listings
 
 ```python
 import requests
@@ -35,7 +35,7 @@ class ListingTracker:
         }
     
     def discover_new_listings(self):
-        """用 Chat API 发现最近的新币上线"""
+        """Discover recent new listings using Chat API"""
         resp = requests.post(
             self.chat_url,
             headers=self.headers,
@@ -43,8 +43,8 @@ class ListingTracker:
                 "model": "surf-1.5-instant",
                 "messages": [{
                     "role": "user",
-                    "content": "列出过去 7 天 Binance 和 OKX 新上线的代币，"
-                               "包括：代币名称、上线日期、上线交易所、上线价格"
+                    "content": "List the tokens newly listed on Binance and OKX in the past 7 days, "
+                               "including: token name, listing date, exchange, and listing price"
                 }],
                 "ability": ["search", "market_analysis"],
                 "reasoning_effort": "low"
@@ -53,11 +53,11 @@ class ListingTracker:
         return resp.json()["choices"][0]["message"]["content"]
 ```
 
-### 2. 追踪表现
+### 2. Track Performance
 
 ```python
     def track_performance(self, symbol, days_since_listing):
-        """追踪新币上线后的表现"""
+        """Track a newly listed token's performance"""
         resp = requests.post(
             self.chat_url,
             headers=self.headers,
@@ -65,11 +65,11 @@ class ListingTracker:
                 "model": "surf-1.5",
                 "messages": [{
                     "role": "user",
-                    "content": f"{symbol} 上线 {days_since_listing} 天以来的表现：\n"
-                               f"1. 价格变化（上线价 vs 当前价）\n"
-                               f"2. 日均成交量趋势\n"
-                               f"3. 持币地址数变化\n"
-                               f"4. 与同期上线的其他币相比如何"
+                    "content": f"Performance of {symbol} since listing ({days_since_listing} days ago):\n"
+                               f"1. Price change (listing price vs current price)\n"
+                               f"2. Average daily volume trend\n"
+                               f"3. Holder address count change\n"
+                               f"4. Comparison with other tokens listed in the same period"
                 }],
                 "ability": ["market_analysis", "evm_onchain"],
                 "reasoning_effort": "medium",
@@ -79,11 +79,11 @@ class ListingTracker:
         return resp.json()["choices"][0]["message"]["content"]
 ```
 
-### 3. 上线前社交热度分析
+### 3. Pre-Listing Social Buzz Analysis
 
 ```python
     def pre_listing_buzz(self, symbol):
-        """分析上线前的 Twitter 讨论"""
+        """Analyze Twitter discussions before listing"""
         resp = requests.post(
             self.chat_url,
             headers=self.headers,
@@ -91,11 +91,11 @@ class ListingTracker:
                 "model": "surf-1.5",
                 "messages": [{
                     "role": "user",
-                    "content": f"分析 {symbol} 上线前 7 天 Twitter 上的讨论：\n"
-                               f"1. 讨论热度曲线\n"
-                               f"2. 主要 KOL 的态度（看多/看空/中性）\n"
-                               f"3. 社区情绪分布\n"
-                               f"4. 是否有异常的提前泄露或内部消息信号"
+                    "content": f"Analyze Twitter discussions about {symbol} in the 7 days before listing:\n"
+                               f"1. Discussion volume trend\n"
+                               f"2. Key KOL stances (bullish/bearish/neutral)\n"
+                               f"3. Community sentiment distribution\n"
+                               f"4. Any signs of abnormal early leaks or insider information"
                 }],
                 "ability": ["search"],
                 "reasoning_effort": "medium"
@@ -104,11 +104,11 @@ class ListingTracker:
         return resp.json()["choices"][0]["message"]["content"]
 ```
 
-### 4. 用 SQL 做历史统计
+### 4. Historical Statistics with SQL
 
 ```sql
--- 统计最近上线代币的 DEX 交易活跃度
--- 适用于有链上流动性的代币
+-- Count DEX trading activity for recently listed tokens
+-- Applicable to tokens with on-chain liquidity
 
 SELECT 
     t.token_symbol,
@@ -120,39 +120,39 @@ FROM agent.ethereum_dex_trades t
 WHERE t.block_date >= today() - 30
   AND t.amount_usd > 0
 GROUP BY t.token_symbol
-HAVING first_trade_date >= today() - 30  -- 只看最近 30 天首次出现的代币
+HAVING first_trade_date >= today() - 30  -- Only tokens first seen in the past 30 days
 ORDER BY total_volume DESC
 LIMIT 20
 ```
 
-## 输出格式
+## Output Format
 
-每日跟踪报告示例：
+Daily tracking report example:
 
 ```
-📊 新币上线追踪 — 2026-04-03
+📊 New Listing Tracker — 2026-04-03
 
-🔵 TOKEN_A (Binance, 上线第 5 天)
-   价格: $0.52 → $0.78 (+50%)
-   24h 成交量: $12.3M
-   持币地址: 8,234 (+15% vs 昨天)
-   KOL 情绪: 偏多 (7/10 KOL 看多)
-   ⚡ 信号: 成交量放大 + 地址增长，短期动能强
+🔵 TOKEN_A (Binance, Day 5 since listing)
+   Price: $0.52 → $0.78 (+50%)
+   24h Volume: $12.3M
+   Holders: 8,234 (+15% vs yesterday)
+   KOL Sentiment: Bullish (7/10 KOLs bullish)
+   ⚡ Signal: Volume surge + address growth, strong short-term momentum
 
-🟡 TOKEN_B (OKX, 上线第 12 天)
-   价格: $1.20 → $0.85 (-29%)
-   24h 成交量: $3.1M (↓40%)
-   持币地址: 2,100 (-5% vs 昨天)
-   KOL 情绪: 中性转空
-   ⚠️ 信号: 量价齐跌，关注支撑位
+🟡 TOKEN_B (OKX, Day 12 since listing)
+   Price: $1.20 → $0.85 (-29%)
+   24h Volume: $3.1M (↓40%)
+   Holders: 2,100 (-5% vs yesterday)
+   KOL Sentiment: Neutral turning bearish
+   ⚠️ Signal: Volume and price both declining, watch support levels
 ```
 
-## 部署建议
+## Deployment Tips
 
-- **新币发现：** 每天跑一次
-- **表现追踪：** 每 6 小时更新（跟 Surf 数据延迟匹配）
-- **报告推送：** 每天早上推送前一天的追踪汇总
+- **New listing discovery:** Run once daily
+- **Performance tracking:** Update every 6 hours (matching Surf data latency)
+- **Report push:** Send previous day's tracking summary every morning
 
 ---
 
-**相关场景：** [套利监控](./arbitrage-monitor.md) · [舆情看板](./sentiment-dashboard.md)
+**Related use cases:** [Arbitrage Monitor](./arbitrage-monitor.md) · [Sentiment Dashboard](./sentiment-dashboard.md)
