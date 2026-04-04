@@ -1,29 +1,29 @@
-# 场景：Twitter 舆情 × 链上数据联动看板
+# Use Case: Twitter Sentiment x On-Chain Data Dashboard
 
-[English](./sentiment-dashboard.en.md) | 中文
+[English](./sentiment-dashboard.en.md) | [中文](./sentiment-dashboard.md)
 
 ---
 
-## 做什么
+## What It Does
 
-左边显示 Twitter 实时舆情热度，右边显示对应项目的链上数据（TVL、交易量、巨鲸动向）。当两边走势背离时，自动发出信号：
+Displays real-time Twitter sentiment on the left and corresponding on-chain data (TVL, trading volume, whale movements) on the right. When the two diverge, it automatically generates signals:
 
-- **舆情热 + 链上冷 = "虚火警报"** — 可能是炒作，谨慎追高
-- **链上热 + 舆情冷 = "埋伏机会"** — 聪明钱在行动，市场还没反应
+- **Hot sentiment + Cold on-chain = "False Hype Alert"** — Likely hype, be cautious about chasing
+- **Hot on-chain + Cold sentiment = "Hidden Opportunity"** — Smart money is moving, market hasn't reacted yet
 
-## 数据源组合
+## Data Source Combinations
 
-| 数据 | Surf 接口 | 用途 |
-|------|----------|------|
-| Twitter Mindshare | Data API `/social/mindshare` | 舆情热度趋势 |
-| Twitter 情绪 | Chat API + `ability: ["search"]` | 正面/负面情绪判断 |
-| 项目 TVL | Data API `/project/tvl` | 链上真实资金流入 |
-| DEX 交易量 | Data Catalog `agent.ethereum_dex_trades` | 链上交易活跃度 |
-| 巨鲸转账 | Data API `/wallet/transfers` | 大户动向 |
+| Data | Surf Interface | Purpose |
+|------|---------------|---------|
+| Twitter Mindshare | Data API `/social/mindshare` | Sentiment trend |
+| Twitter Sentiment | Chat API + `ability: ["search"]` | Positive/negative sentiment analysis |
+| Project TVL | Data API `/project/tvl` | Real on-chain capital inflow |
+| DEX Volume | Data Catalog `agent.ethereum_dex_trades` | On-chain trading activity |
+| Whale Transfers | Data API `/wallet/transfers` | Large holder movements |
 
-## 核心代码
+## Core Code
 
-### 1. 获取舆情 + 链上数据
+### 1. Fetch Sentiment + On-Chain Data
 
 ```python
 import requests
@@ -39,7 +39,7 @@ class SentimentDashboard:
         }
     
     def get_mindshare(self, symbol, time_range="7d"):
-        """获取 Twitter Mindshare 趋势"""
+        """Get Twitter Mindshare trend"""
         resp = requests.get(
             f"{self.data_url}/v1/social/mindshare",
             headers=self.headers,
@@ -48,7 +48,7 @@ class SentimentDashboard:
         return resp.json() if resp.ok else None
     
     def get_sentiment(self, symbol):
-        """用 Chat API 分析当前情绪"""
+        """Analyze current sentiment using Chat API"""
         resp = requests.post(
             self.chat_url,
             headers=self.chat_headers,
@@ -56,8 +56,8 @@ class SentimentDashboard:
                 "model": "surf-1.5-instant",
                 "messages": [{
                     "role": "user",
-                    "content": f"分析 Twitter 上过去 24 小时关于 {symbol} 的讨论情绪。"
-                               f"给出：1) 整体偏多/偏空/中性 2) 主要话题 3) 影响力最大的 KOL 观点"
+                    "content": f"Analyze Twitter discussions about {symbol} over the past 24 hours. "
+                               f"Provide: 1) Overall bullish/bearish/neutral 2) Main topics 3) Key KOL opinions"
                 }],
                 "ability": ["search"],
                 "reasoning_effort": "low"
@@ -66,76 +66,77 @@ class SentimentDashboard:
         return resp.json()["choices"][0]["message"]["content"]
 ```
 
-### 2. 背离检测
+### 2. Divergence Detection
 
 ```python
     def detect_divergence(self, symbol):
-        """检测舆情-链上背离"""
+        """Detect sentiment vs on-chain divergence"""
         mindshare = self.get_mindshare(symbol)
-        # 获取 DeFi TVL 排名数据
+        # Fetch DeFi TVL ranking data
         tvl_resp = requests.get(
             f"{self.data_url}/v1/project/defi-ranking",
             headers=self.headers,
             params={"metric": "tvl", "limit": 20}
         )
         tvl_data = tvl_resp.json().get("data", []) if tvl_resp.ok else []
-        # 返回格式: [{"name": "Aave", "tvl": 40779865964, "fees": ..., "revenue": ...}, ...]
+        # Response format: [{"name": "Aave", "tvl": 40779865964, "fees": ..., "revenue": ...}, ...]
         
-        # 背离逻辑：
-        # mindshare_change = (本周 mindshare - 上周) / 上周
-        # tvl_change = (本周 TVL - 上周) / 上周
+        # Divergence logic:
+        # mindshare_change = (this_week_mindshare - last_week) / last_week
+        # tvl_change = (this_week_tvl - last_week) / last_week
         # 
         # if mindshare_change > 30% and tvl_change < -5%:
-        #     return "虚火警报"
+        #     return "False Hype Alert"
         # if mindshare_change < -10% and tvl_change > 20%:
-        #     return "埋伏机会"
-        # return "正常"
+        #     return "Hidden Opportunity"
+        # return "Normal"
         pass
 ```
 
-### 3. 用 SQL 查历史背离事件
+### 3. Query Historical Divergence Events with SQL
 
 ```sql
--- 查某个项目的 DEX 交易量趋势（过去 30 天，按天聚合）
+-- Query a project's DEX trading volume trend (past 30 days, aggregated by day)
 SELECT 
     block_date,
     sum(amount_usd) AS daily_volume,
     count(*) AS trade_count
 FROM agent.ethereum_dex_trades
 WHERE block_date >= today() - 30
-  AND project = 'uniswap'  -- 按协议名过滤，可选值：uniswap, aave, curve, lido 等
+  AND project = 'uniswap'  -- Filter by protocol name; options: uniswap, aave, curve, lido, etc.
 GROUP BY block_date
 ORDER BY block_date
 ```
 
-## 前端展示建议
+## Frontend Layout Suggestion
 
-用 [dashboard-template](https://github.com/build-with-surf/dashboard-template) 快速搭建：
+Use the [dashboard-template](https://github.com/build-with-surf/dashboard-template) for quick setup:
 
 ```
 ┌─────────────────┬─────────────────┐
-│  Twitter 舆情     │   链上数据       │
+│ Twitter Sentiment │  On-Chain Data  │
 │                 │                 │
-│  📈 Mindshare    │  📊 TVL 趋势     │
-│  曲线图          │  曲线图          │
+│  📈 Mindshare    │  📊 TVL Trend   │
+│  Line chart     │  Line chart     │
 │                 │                 │
-│  😊 情绪分布      │  🐋 巨鲸动向     │
-│  饼图            │  表格            │
+│  😊 Sentiment    │  🐋 Whale       │
+│  Pie chart      │  Table          │
 │                 │                 │
 ├─────────────────┴─────────────────┤
-│          ⚠️ 背离信号               │
-│  ETH: 虚火警报 — Mindshare +45%,   │
-│  但 TVL -8%, 巨鲸净流出 $2.3M      │
+│       ⚠️ Divergence Signals       │
+│  ETH: False Hype Alert —          │
+│  Mindshare +45%, but TVL -8%,     │
+│  whale net outflow $2.3M          │
 └───────────────────────────────────┘
 ```
 
-## 部署
+## Deployment
 
-- **刷新频率：** 舆情数据 1 小时，链上数据 6 小时（参考 Surf 数据延迟表）
-- **存储：** 历史背离事件存数据库，用于回测信号准确率
-- **告警：** 背离信号通过 Telegram Bot 推送
+- **Refresh frequency:** Sentiment data every 1 hour, on-chain data every 6 hours (refer to Surf data latency table)
+- **Storage:** Store historical divergence events in a database for backtesting signal accuracy
+- **Alerts:** Push divergence signals via Telegram Bot
 
-**Mindshare API 返回格式（已验证）：**
+**Mindshare API Response Format (Verified):**
 
 ```json
 {
@@ -148,8 +149,8 @@ ORDER BY block_date
 }
 ```
 
-> `value` 是该项目在 Crypto Twitter 中的 mindshare 占比（0-1），`interval` 默认按天。
+> `value` is the project's mindshare ratio within Crypto Twitter (0-1), with `interval` defaulting to daily.
 
 ---
 
-**相关场景：** [套利监控](./arbitrage-monitor.md) · [上币追踪器](./listing-tracker.md)
+**Related use cases:** [Arbitrage Monitor](./arbitrage-monitor.md) · [Listing Tracker](./listing-tracker.md)
