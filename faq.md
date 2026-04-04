@@ -1,40 +1,40 @@
-# 常见问题 FAQ
+# Frequently Asked Questions
 
-[English](./faq.en.md) | 中文
+[English](./faq.en.md) | [中文](./faq.md)
 
 ---
 
-### Chat API 和 Data API 有什么区别？
+### What's the difference between Chat API and Data API?
 
-- **Chat API** — 自然语言输入，Surf AI 理解你的问题并返回分析结果。适合研究、报告生成、复杂分析
-- **Data API** — 结构化 REST 请求，返回 JSON 数据。适合构建看板、监控系统、数据管道
+- **Chat API** — Natural language input; Surf AI understands your question and returns analysis results. Best for research, report generation, and complex analysis.
+- **Data API** — Structured REST requests returning JSON data. Best for building dashboards, monitoring systems, and data pipelines.
 
-简单说：Chat API 是让 AI 帮你分析，Data API 是你自己拿数据来分析。
+In short: Chat API lets AI analyze for you; Data API gives you the data to analyze yourself.
 
-### 模型怎么选？
+### How do I choose a model?
 
-| 你要做什么 | 用哪个模型 |
-|-----------|-----------|
-| 快速查价格、简单问答 | `surf-1.5-instant` |
-| 日常分析（不知道选哪个就用这个） | `surf-1.5` |
-| 深度研究、多步推理 | `surf-1.5-thinking` |
-| 超长尽调报告 | `surf-research`（超时设 10 分钟） |
+| What you need | Which model |
+|---------------|-------------|
+| Quick price checks, simple Q&A | `surf-1.5-instant` |
+| Everyday analysis (use this if unsure) | `surf-1.5` |
+| Deep research, multi-step reasoning | `surf-1.5-thinking` |
+| Long-form due diligence reports | `surf-research` (set 10-min timeout) |
 
-### 支持哪些链？
+### Which chains are supported?
 
 `ethereum` · `polygon` · `bsc` · `solana` · `avalanche` · `arbitrum` · `optimism` · `fantom` · `base` · `linea` · `cyber`
 
-Data API 的 `chain` 参数必须用全称，不接受缩写（`eth`, `sol` 等不行）。
+The Data API `chain` parameter requires full names — abbreviations like `eth`, `sol`, etc. are not accepted.
 
-### Credits 怎么计费？
+### How does Credits billing work?
 
-每次 API 调用消耗 Credits，具体消耗量在响应的 `meta.credits_used` 字段中返回。可以通过 `GET /v1/me/credit-balance` 查询余额。
+Each API call consumes Credits. The exact amount is returned in the `meta.credits_used` field of the response. You can check your balance via `GET /v1/me/credit-balance`.
 
-> **获取 Credits：** 联系 [@siriusxyzzz](https://x.com/siriusxyzzz) 加入开发者微信群，群内获取 Credits 和技术支持。
+> **Get Credits:** Contact [@siriusxyzzz](https://x.com/siriusxyzzz) to join the developer WeChat group for Credits and technical support.
 
-### 能用 OpenAI SDK 调 Surf 吗？
+### Can I use the OpenAI SDK with Surf?
 
-可以。Chat API 兼容 OpenAI 格式，只需要改 `base_url` 和 `model`：
+Yes. The Chat API is OpenAI-compatible — just change `base_url` and `model`:
 
 ```python
 from openai import OpenAI
@@ -44,46 +44,46 @@ client = OpenAI(
 )
 ```
 
-Surf 的扩展字段（`ability`, `citation`）可能需要通过 `extra_body` 传递。
+Surf extension fields (`ability`, `citation`) can be passed via `extra_body`.
 
-> **已验证：** `extra_body` 可传递 `ability`、`reasoning_effort`、`citation`。Streaming 正常。
+> **Verified:** `extra_body` supports `ability`, `reasoning_effort`, and `citation`. Streaming works correctly.
 
-### 数据延迟是多少？
+### What's the data latency?
 
-取决于数据源：
+Depends on the data source:
 
-| 数据类型 | 延迟 |
-|---------|------|
-| CoinGecko 价格 | ~1 小时 |
-| Polygon 链上 | ~1 小时 |
-| Base 链上 | ~6 小时 |
-| Ethereum/Arbitrum 链上 | ~1 天 |
-| Polymarket | ~1 天 |
-| Kalshi | ~6 小时 |
+| Data Type | Latency |
+|-----------|---------|
+| CoinGecko prices | ~1 hour |
+| Polygon on-chain | ~1 hour |
+| Base on-chain | ~6 hours |
+| Ethereum/Arbitrum on-chain | ~1 day |
+| Polymarket | ~1 day |
+| Kalshi | ~6 hours |
 
-### Data Catalog 怎么连接？
+### How do I connect to the Data Catalog?
 
-通过 ClickHouse HTTP 接口（端口 8443，TLS），用户名 `agent`（只读）。
+Via ClickHouse HTTP interface (port 8443, TLS), username `agent` (read-only).
 
-> 联系 [@siriusxyzzz](https://x.com/siriusxyzzz) 加入开发者微信群获取连接信息。
+> Contact [@siriusxyzzz](https://x.com/siriusxyzzz) to join the developer WeChat group for connection details.
 
-### 请求报错了怎么办？
+### What should I do when I get an error?
 
-| 错误码 | 含义 | 解决 |
-|--------|------|------|
-| 400 | 参数错误 | 检查请求格式和参数值 |
-| 401 | 认证失败 | 检查 API Key |
-| 402 | Credits 不足 | 充值 |
-| 422 | 参数值无效 | 检查 chain 是否用了全称等 |
-| 429 | 限频 | 降低频率，等一会儿重试 |
-| 502 | 上游不可用 | 等一会儿重试 |
+| Error Code | Meaning | Solution |
+|------------|---------|----------|
+| 400 | Bad request | Check request format and parameter values |
+| 401 | Authentication failed | Check API Key |
+| 402 | Insufficient Credits | Top up |
+| 422 | Invalid parameter value | Check if chain uses full name, etc. |
+| 429 | Rate limited | Reduce frequency, wait and retry |
+| 502 | Upstream unavailable | Wait and retry |
 
-### 这个知识库是官方的吗？
+### Is this an official knowledge base?
 
-不是。这是社区维护的非官方知识库。官方文档在 [docs.asksurf.ai](https://docs.asksurf.ai)。
+No. This is a community-maintained unofficial knowledge base. Official documentation is at [docs.asksurf.ai](https://docs.asksurf.ai).
 
-我们的目的是提供更多实战教程、使用场景和代码示例，补充官方文档没覆盖的内容。
+Our goal is to provide more hands-on tutorials, use cases, and code examples that supplement what the official docs don't cover.
 
 ---
 
-**还有问题？** 在 [GitHub Issues](https://github.com/build-with-surf/surf-api-docs/issues) 提问。
+**Still have questions?** Ask on [GitHub Issues](https://github.com/build-with-surf/surf-api-docs/issues).
