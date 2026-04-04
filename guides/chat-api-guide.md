@@ -1,70 +1,70 @@
-# Chat API 实战指南
+# Chat API Practical Guide
 
-[English](./chat-api-guide.en.md) | 中文
+[English](./chat-api-guide.en.md) | [中文](./chat-api-guide.md)
 
 ---
 
-Chat API 是 Surf 最灵活的接口 — OpenAI 兼容格式，可以直接用来构建 Crypto AI 应用。
+The Chat API is Surf's most flexible interface — OpenAI-compatible format that you can use directly to build Crypto AI applications.
 
-## 基础架构
+## Architecture
 
 ```
-你的应用 → POST /v1/chat/completions → Surf 模型
+Your App → POST /v1/chat/completions → Surf Model
                                          ↓
-                                    实时链上数据
-                                    市场分析引擎
-                                    社交情绪分析
-                                    预测市场数据
+                                    Real-time on-chain data
+                                    Market analysis engine
+                                    Social sentiment analysis
+                                    Prediction market data
                                          ↓
-                                    结构化回答
+                                    Structured response
 ```
 
-## 模型怎么选？
+## How to Choose a Model?
 
-| 场景 | 推荐模型 | `reasoning_effort` | 为什么 |
-|------|---------|-------------------|--------|
-| 实时价格/简单查询 | `surf-1.5-instant` | `low` | 快，0.5-2 秒返回 |
-| 日常分析 | `surf-1.5` | `medium` | 自动选择 instant 或 thinking |
-| 深度研究报告 | `surf-1.5-thinking` | `high` | 多步推理，结果更深入 |
-| 长篇尽调 | `surf-research` | N/A | Legacy 但适合超长输出（超时设 10 分钟） |
+| Scenario | Recommended Model | `reasoning_effort` | Why |
+|----------|-------------------|-------------------|-----|
+| Real-time prices / simple queries | `surf-1.5-instant` | `low` | Fast, 0.5-2 second response |
+| Everyday analysis | `surf-1.5` | `medium` | Automatically selects instant or thinking |
+| Deep research reports | `surf-1.5-thinking` | `high` | Multi-step reasoning, deeper results |
+| Long-form due diligence | `surf-research` | N/A | Legacy but good for very long outputs (set 10-min timeout) |
 
-## `ability` 参数详解
+## `ability` Parameter Explained
 
-`ability` 告诉 Surf 这次查询需要调用哪些数据能力：
+`ability` tells Surf which data capabilities to invoke for a query:
 
-| ability | 含义 | 典型用途 |
-|---------|------|---------|
-| `search` | 搜索引擎 | 项目信息、新闻、实体查找 |
-| `evm_onchain` | EVM 链上数据 | ETH/Polygon/Arbitrum 等链的交易、合约、钱包 |
-| `solana_onchain` | Solana 链上数据 | SPL 代币、DEX 交易 |
-| `market_analysis` | 市场分析 | 价格、K线、技术指标、资金费率 |
-| `calculate` | 计算引擎 | 数学计算、投资组合估值 |
+| ability | Meaning | Typical Use |
+|---------|---------|-------------|
+| `search` | Search engine | Project info, news, entity lookup |
+| `evm_onchain` | EVM on-chain data | Transactions, contracts, wallets on ETH/Polygon/Arbitrum etc. |
+| `solana_onchain` | Solana on-chain data | SPL tokens, DEX trades |
+| `market_analysis` | Market analysis | Prices, candlesticks, technical indicators, funding rates |
+| `calculate` | Calculation engine | Math calculations, portfolio valuation |
 
-**建议：** 明确指定 ability 可以加快响应速度。不指定则 Surf 自动判断。
+**Tip:** Explicitly specifying abilities speeds up response time. If omitted, Surf will auto-detect.
 
 ```python
-# 查链上数据时，指定 evm_onchain
+# For on-chain data queries, specify evm_onchain
 {"ability": ["evm_onchain"]}
 
-# 做市场分析时，指定 market_analysis
+# For market analysis, specify market_analysis
 {"ability": ["market_analysis"]}
 
-# 需要同时看链上和市场数据
+# When you need both on-chain and market data
 {"ability": ["evm_onchain", "market_analysis"]}
 ```
 
-## `citation` 参数
+## `citation` Parameter
 
-控制 Surf 是否在回答中附带引用：
+Controls whether Surf includes citations in responses:
 
-| 值 | 效果 |
-|------|------|
-| `source` | 附带数据来源链接 |
-| `chart` | 生成可视化图表 |
+| Value | Effect |
+|-------|--------|
+| `source` | Includes data source links |
+| `chart` | Generates visual charts |
 
-## 实战示例
+## Practical Examples
 
-### 1. 资金费率监控 Bot
+### 1. Funding Rate Monitor Bot
 
 ```python
 import requests
@@ -81,7 +81,7 @@ def check_funding_rates():
             "model": "surf-1.5-instant",
             "messages": [{
                 "role": "user",
-                "content": "列出当前资金费率最高和最低的 5 个币种，包括 Binance 和 OKX 的对比"
+                "content": "List the 5 tokens with the highest and lowest funding rates right now, including a comparison between Binance and OKX"
             }],
             "reasoning_effort": "low",
             "ability": ["market_analysis"]
@@ -90,7 +90,7 @@ def check_funding_rates():
     return response.json()["choices"][0]["message"]["content"]
 ```
 
-### 2. 项目快速尽调
+### 2. Quick Project Due Diligence
 
 ```python
 def quick_research(project_name):
@@ -104,21 +104,21 @@ def quick_research(project_name):
             "model": "surf-1.5-thinking",
             "messages": [{
                 "role": "system",
-                "content": "你是一个 Crypto 研究分析师。输出结构化的项目尽调报告。"
+                "content": "You are a Crypto research analyst. Output a structured project due diligence report."
             }, {
                 "role": "user",
-                "content": f"对 {project_name} 做一份快速尽调：基本面、链上数据、社交热度、风险点"
+                "content": f"Run a quick due diligence on {project_name}: fundamentals, on-chain data, social buzz, and risk factors"
             }],
             "reasoning_effort": "high",
             "ability": ["search", "evm_onchain", "market_analysis"],
             "citation": ["source"]
         },
-        timeout=600  # 深度研究可能需要更长时间
+        timeout=600  # Deep research may take longer
     )
     return response.json()["choices"][0]["message"]["content"]
 ```
 
-### 3. 流式输出（适合 UI 展示）
+### 3. Streaming Output (For UI Display)
 
 ```python
 import requests
@@ -132,7 +132,7 @@ response = requests.post(
     },
     json={
         "model": "surf-1.5",
-        "messages": [{"role": "user", "content": "分析 ETH 的链上活跃度趋势"}],
+        "messages": [{"role": "user", "content": "Analyze the on-chain activity trend of ETH"}],
         "stream": True
     },
     stream=True
@@ -148,35 +148,35 @@ for line in response.iter_lines():
                 print(delta["content"], end="", flush=True)
 ```
 
-## 错误处理
+## Error Handling
 
-| HTTP 状态码 | 含义 | 怎么办 |
-|------------|------|--------|
-| 400 | 参数错误 | 检查请求格式 |
-| 401 | API Key 无效 | 检查 Authorization header |
-| 402 | Credits 不足 | 充值 |
-| 502 | 上游数据源暂时不可用 | 等一会儿重试 |
+| HTTP Status | Meaning | What to Do |
+|-------------|---------|------------|
+| 400 | Bad request | Check request format |
+| 401 | Invalid API Key | Check Authorization header |
+| 402 | Insufficient Credits | Top up |
+| 502 | Upstream data source temporarily unavailable | Wait and retry |
 
-## 从 OpenAI SDK 迁移
+## Migrating from OpenAI SDK
 
-如果你已经在用 OpenAI SDK，只需要改两行：
+If you're already using the OpenAI SDK, you only need to change two lines:
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
     api_key="<your-surf-api-key>",
-    base_url="https://api.asksurf.ai/surf-ai/v1"  # 改这里
+    base_url="https://api.asksurf.ai/surf-ai/v1"  # Change this
 )
 
 response = client.chat.completions.create(
-    model="surf-1.5",  # 改这里
-    messages=[{"role": "user", "content": "BTC 今天怎么样？"}]
+    model="surf-1.5",  # Change this
+    messages=[{"role": "user", "content": "How's BTC doing today?"}]
 )
 ```
 
-> **已验证（2026-04-03）：** OpenAI SDK 完全兼容。`extra_body` 可以传递 `ability`、`reasoning_effort`、`citation` 等 Surf 扩展字段。Streaming 也正常工作。
+> **Verified (2026-04-03):** Fully compatible with the OpenAI SDK. `extra_body` can pass Surf extension fields like `ability`, `reasoning_effort`, and `citation`. Streaming also works correctly.
 
 ---
 
-**下一步：** 查看 [Data API 实战指南](./data-api-guide.md) 学习如何直接查询结构化数据。
+**Next:** See the [Data API Practical Guide](./data-api-guide.md) to learn how to query structured data directly.
