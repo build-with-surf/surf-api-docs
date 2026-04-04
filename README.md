@@ -19,6 +19,11 @@
   <a href="https://asksurf.ai">Official Site</a>
 </p>
 
+
+<p align="center">
+  [![GitHub stars](https://img.shields.io/github/stars/build-with-surf/surf-api-docs?style=flat-square)](https://github.com/build-with-surf/surf-api-docs/stargazers) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+</p>
+
 ---
 
 ## About
