@@ -1,32 +1,32 @@
-# 场景：跨交易所套利监控
+# Use Case: Cross-Exchange Arbitrage Monitor
 
-[English](./arbitrage-monitor.en.md) | 中文
+[English](./arbitrage-monitor.en.md) | [中文](./arbitrage-monitor.md)
 
 ---
 
-## 做什么
+## What It Does
 
-实时监控多个交易所的资金费率和现货-合约价差，发现套利机会并计算扣除成本后的净收益。
+Monitors funding rates and spot-futures price spreads across multiple exchanges in real time, identifies arbitrage opportunities, and calculates net profit after costs.
 
-## 架构
+## Architecture
 
 ```
-定时任务（每 5 分钟）
+Cron Job (every 5 minutes)
     │
-    ├── Surf Data API: 资金费率 (/exchange/funding-rate)
-    ├── Surf Data API: 现货价格 (/market/price)
-    ├── Surf Chat API: 情绪分析（判断窗口持续时间）
-    │
-    ▼
-  计算净套利空间
+    ├── Surf Data API: Funding rates (/exchange/funding-rate)
+    ├── Surf Data API: Spot prices (/market/price)
+    ├── Surf Chat API: Sentiment analysis (estimate window duration)
     │
     ▼
-  Telegram/微信 推送（超过阈值时）
+  Calculate net arbitrage spread
+    │
+    ▼
+  Telegram/WeChat alert (when threshold exceeded)
 ```
 
-## 核心代码
+## Core Code
 
-### 1. 拉取资金费率
+### 1. Fetch Funding Rates
 
 ```python
 import requests
@@ -38,7 +38,7 @@ class ArbitrageMonitor:
         self.headers = {"Authorization": f"Bearer {api_key}"}
     
     def get_funding_rates(self, symbols="BTC,ETH,SOL,ARB,DOGE"):
-        """获取多币种资金费率"""
+        """Get funding rates for multiple tokens"""
         rates = {}
         for symbol in symbols.split(","):
             resp = requests.get(
@@ -51,11 +51,11 @@ class ArbitrageMonitor:
         return rates
 ```
 
-### 2. 计算套利空间
+### 2. Calculate Arbitrage Spread
 
 ```python
     def calculate_spread(self, rates):
-        """找出资金费率差异最大的机会"""
+        """Find opportunities with the largest funding rate discrepancies"""
         opportunities = []
         for symbol, data in rates.items():
             for exchange in ["binance", "okx", "bybit"]:
@@ -76,14 +76,14 @@ class ArbitrageMonitor:
             except Exception:
                 continue
         
-        # 找最大和最小费率的交易所
+        # Find exchanges with highest and lowest rates
         if len(rates) >= 2:
             sorted_rates = sorted(rates.values(), key=lambda x: x["rate"])
             spread = sorted_rates[-1]["rate"] - sorted_rates[0]["rate"]
             if spread > 0:
                 opportunities.append({
                     "symbol": symbol,
-                    "spread": round(spread * 100, 4),  # 转为百分比
+                    "spread": round(spread * 100, 4),  # Convert to percentage
                     "long_exchange": sorted_rates[0]["exchange"],
                     "long_rate": round(sorted_rates[0]["rate"] * 100, 4),
                     "short_exchange": sorted_rates[-1]["exchange"],
@@ -92,11 +92,11 @@ class ArbitrageMonitor:
         return opportunities
 ```
 
-### 3. 用 Chat API 判断窗口持续时间
+### 3. Use Chat API to Estimate Window Duration
 
 ```python
     def analyze_window(self, symbol, spread):
-        """用 Surf AI 分析套利窗口可能持续多久"""
+        """Use Surf AI to analyze how long the arbitrage window might last"""
         resp = requests.post(
             "https://api.asksurf.ai/surf-ai/v1/chat/completions",
             headers={
@@ -107,8 +107,8 @@ class ArbitrageMonitor:
                 "model": "surf-1.5-instant",
                 "messages": [{
                     "role": "user",
-                    "content": f"{symbol} 当前资金费率异常（价差 {spread}%），"
-                               f"结合当前市场情绪和持仓数据，这个套利窗口大概会持续多久？"
+                    "content": f"{symbol} has an abnormal funding rate (spread {spread}%). "
+                               f"Based on current market sentiment and position data, how long is this arbitrage window likely to last?"
                 }],
                 "ability": ["market_analysis"],
                 "reasoning_effort": "low"
@@ -117,29 +117,29 @@ class ArbitrageMonitor:
         return resp.json()["choices"][0]["message"]["content"]
 ```
 
-### 4. 告警推送
+### 4. Alert Notification
 
 ```python
     def check_and_alert(self, threshold=0.05):
-        """主循环：检查并推送"""
+        """Main loop: check and notify"""
         rates = self.get_funding_rates()
         opportunities = self.calculate_spread(rates)
         
         for opp in opportunities:
             if opp["spread"] > threshold:
                 analysis = self.analyze_window(opp["symbol"], opp["spread"])
-                # 推送到 Telegram / 微信
+                # Push to Telegram / WeChat
                 message = (
-                    f"🔔 套利机会: {opp['symbol']}\n"
-                    f"价差: {opp['spread']}%\n"
-                    f"做多: {opp['long_exchange']} ({opp['long_rate']}%)\n"
-                    f"做空: {opp['short_exchange']} ({opp['short_rate']}%)\n"
-                    f"AI 分析: {analysis[:200]}"
+                    f"🔔 Arbitrage Opportunity: {opp['symbol']}\n"
+                    f"Spread: {opp['spread']}%\n"
+                    f"Long: {opp['long_exchange']} ({opp['long_rate']}%)\n"
+                    f"Short: {opp['short_exchange']} ({opp['short_rate']}%)\n"
+                    f"AI Analysis: {analysis[:200]}"
                 )
-                print(message)  # 替换为实际推送逻辑
+                print(message)  # Replace with actual push logic
 ```
 
-**资金费率 API 返回格式（已验证）：**
+**Funding Rate API Response Format (Verified):**
 
 ```json
 {
@@ -155,8 +155,9 @@ class ArbitrageMonitor:
 }
 ```
 
-> **注意：** `pair` 格式为 `BTC/USDT`（用 `/` 分隔）。`funding_rate` 是小数，`-0.00007398` = -0.007398%。
-**Telegram Bot 推送：**
+> **Note:** `pair` format is `BTC/USDT` (separated by `/`). `funding_rate` is a decimal — `-0.00007398` = -0.007398%.
+
+**Telegram Bot Push:**
 
 ```python
 import requests
@@ -167,16 +168,16 @@ def send_telegram(bot_token, chat_id, message):
         json={"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
     )
 
-# 在 check_and_alert 中调用：
+# Call in check_and_alert:
 # send_telegram(BOT_TOKEN, CHAT_ID, message)
 ```
 
-## 进阶：用 SQL 做历史回测
+## Advanced: Historical Backtesting with SQL
 
 ```sql
--- 查历史资金费率异常事件
--- Hyperliquid 永续合约数据在 agent.hyperliquid_perp_* 表中
--- 其他交易所资金费率建议用 Data API (exchange-funding-history) 获取
+-- Query historical abnormal funding rate events
+-- Hyperliquid perpetual data is in agent.hyperliquid_perp_* tables
+-- For other exchange funding rates, use the Data API (exchange-funding-history)
 
 SELECT 
     coin,
@@ -189,12 +190,12 @@ ORDER BY abs(funding_rate) DESC
 LIMIT 20
 ```
 
-## 部署建议
+## Deployment Tips
 
-- **频率：** 每 5 分钟跑一次（资金费率变化不快，不需要秒级）
-- **部署：** 用 cron 或 Railway/Vercel 的定时任务
-- **成本：** 每次大约消耗 5-10 Credits（取决于查询币种数量）
+- **Frequency:** Run every 5 minutes (funding rates don't change fast enough to need sub-second polling)
+- **Hosting:** Use cron or Railway/Vercel scheduled tasks
+- **Cost:** Approximately 5-10 Credits per run (depends on number of tokens queried)
 
 ---
 
-**相关场景：** [上币追踪器](./listing-tracker.md) · [舆情看板](./sentiment-dashboard.md)
+**Related use cases:** [Listing Tracker](./listing-tracker.md) · [Sentiment Dashboard](./sentiment-dashboard.md)
